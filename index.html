@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#060913"/>
+<title>Тест · Переменный ток · 11 класс</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060913; --card:rgba(13,20,40,.82); --line:rgba(120,160,255,.16);
+  --ink:#eaf2ff; --dim:#8fa3c8;
+  --cyan:#39e6ff; --mag:#ff4fd8; --lime:#a6ff4d; --amber:#ffb84d; --red:#ff5470;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh; background:var(--bg); color:var(--ink);
+  font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  touch-action:manipulation; overflow-x:hidden;
+}
+/* ---------- фон: миллиметровка + неоновые ореолы + синусоида ---------- */
+body::before{
+  content:""; position:fixed; inset:0; z-index:-3;
+  background:
+    linear-gradient(rgba(96,150,255,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96,150,255,.06) 1px, transparent 1px);
+  background-size:34px 34px;
+  -webkit-mask-image:radial-gradient(ellipse 95% 85% at 50% 15%, #000 35%, transparent 100%);
+          mask-image:radial-gradient(ellipse 95% 85% at 50% 15%, #000 35%, transparent 100%);
+}
+.orb{position:fixed;border-radius:50%;filter:blur(70px);z-index:-2;pointer-events:none}
+.o1{width:52vmax;height:52vmax;left:-18vmax;top:-20vmax;opacity:.30;
+    background:radial-gradient(circle, rgba(57,230,255,.5), transparent 62%);
+    animation:drift 16s ease-in-out infinite alternate}
+.o2{width:46vmax;height:46vmax;right:-16vmax;bottom:-18vmax;opacity:.22;
+    background:radial-gradient(circle, rgba(255,79,216,.45), transparent 62%);
+    animation:drift 20s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(6vmax,4vmax) scale(1.08)}}
+#wave{position:fixed;left:0;right:0;bottom:-6px;width:100%;height:92px;z-index:-1;opacity:.55;pointer-events:none}
+.waveP {fill:none;stroke:rgba(57,230,255,.4);stroke-width:2;stroke-dasharray:6 10;animation:flow 3.2s linear infinite}
+.waveP2{fill:none;stroke:rgba(255,79,216,.3);stroke-width:2;stroke-dasharray:4 12;animation:flow 5s linear infinite reverse}
+@keyframes flow{to{stroke-dashoffset:-160}}
+
+main{max-width:760px;margin:0 auto;position:relative;z-index:1;
+     padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 44px)}
+.screen{display:none}
+.screen.on{display:block;animation:rise .5s cubic-bezier(.22,.9,.3,1)}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+      padding:22px;box-shadow:0 18px 50px rgba(2,6,18,.55)}
+.tag{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono';
+     font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);
+     border:1px solid rgba(57,230,255,.35);background:rgba(57,230,255,.06);
+     padding:6px 13px;border-radius:999px}
+h1{font-family:'Unbounded';font-weight:800;font-size:clamp(1.45rem,5.4vw,2.3rem);
+   line-height:1.16;margin:16px 0 8px}
+h1 .neon{color:var(--cyan);text-shadow:0 0 20px rgba(57,230,255,.6)}
+h2{font-family:'Unbounded';font-weight:600;font-size:clamp(1.1rem,3.6vw,1.45rem);margin-bottom:12px}
+.sub{color:var(--dim);font-size:.95rem;line-height:1.55}
+
+.teacher{display:flex;gap:12px;align-items:center;border:1px solid var(--line);
+  border-left:3px solid var(--mag);background:rgba(255,79,216,.05);
+  border-radius:12px;padding:12px 16px;margin:18px 0}
+.teacher .dot{width:10px;height:10px;border-radius:50%;background:var(--mag);
+  box-shadow:0 0 10px var(--mag);flex:none;animation:pulse2 2s infinite}
+@keyframes pulse2{50%{opacity:.35}}
+.teacher small{display:block;color:var(--dim);text-transform:uppercase;letter-spacing:.14em;font-size:.66rem}
+.teacher b{font-size:1.02rem}
+
+.metas{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.metas span{font-family:'JetBrains Mono';font-size:.75rem;color:var(--dim);
+  border:1px dashed rgba(143,163,200,.35);border-radius:999px;padding:6px 12px}
+.metas b{color:var(--cyan)}
+
+label.f{display:block;margin-top:14px}
+label.f>span{display:block;font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:7px}
+input[type=text],select{width:100%;background:#0a1124;border:1px solid var(--line);
+  color:var(--ink);border-radius:12px;padding:13px 14px;font:500 16px 'Manrope';
+  outline:none;transition:border-color .25s, box-shadow .25s}
+input:focus,select:focus{border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(57,230,255,.14),0 0 18px rgba(57,230,255,.3)}
+.selwrap{position:relative}
+.selwrap::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--dim);pointer-events:none}
+select{appearance:none;-webkit-appearance:none}
+.att-info{margin-top:14px;font-family:'JetBrains Mono';font-size:.78rem;color:var(--amber)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:'Unbounded';font-weight:600;font-size:.95rem;letter-spacing:.02em;
+  color:var(--c,#39e6ff);background:transparent;border:1.5px solid var(--c,#39e6ff);
+  border-radius:12px;padding:15px 22px;margin-top:20px;cursor:pointer;transition:.25s;
+  text-shadow:0 0 12px rgba(57,230,255,.35)}
+.btn.am{--c:var(--amber)}
+.btn:active{transform:scale(.97)}
+.btn:not(.lit){opacity:.45;cursor:not-allowed;box-shadow:none;animation:none}
+.btn.lit{color:#eaffff;background:linear-gradient(180deg,rgba(57,230,255,.2),rgba(57,230,255,.08));
+  animation:pulseBtn 1.6s ease-in-out infinite}
+.btn.am.lit{background:linear-gradient(180deg,rgba(255,184,77,.22),rgba(255,184,77,.08))}
+@keyframes pulseBtn{
+  0%,100%{box-shadow:0 0 12px rgba(57,230,255,.6),0 0 40px rgba(57,230,255,.25),inset 0 0 12px rgba(57,230,255,.2)}
+  50%{box-shadow:0 0 22px rgba(57,230,255,.95),0 0 64px rgba(57,230,255,.45),inset 0 0 18px rgba(57,230,255,.35)}}
+.btn.am.lit{animation-name:pulseBtnAm}
+@keyframes pulseBtnAm{
+  0%,100%{box-shadow:0 0 12px rgba(255,184,77,.6),0 0 40px rgba(255,184,77,.25),inset 0 0 12px rgba(255,184,77,.2)}
+  50%{box-shadow:0 0 22px rgba(255,184,77,.95),0 0 64px rgba(255,184,77,.45),inset 0 0 18px rgba(255,184,77,.35)}}
+
+/* ---------- дисклеймер ---------- */
+.rules{list-style:none;margin:14px 0;display:grid;gap:10px}
+.rules li{display:flex;gap:11px;line-height:1.5;font-size:.95rem}
+.rules li::before{content:"◈";color:var(--cyan);text-shadow:0 0 8px var(--cyan);flex:none}
+.rules li.warnli::before{content:"⚠";color:var(--amber);text-shadow:0 0 8px var(--amber)}
+.honest{border:1px solid rgba(166,255,77,.35);background:rgba(166,255,77,.05);
+  border-radius:12px;padding:13px 15px;font-size:.9rem;line-height:1.55;margin-top:6px}
+.honest b{color:var(--lime)}
+
+/* ---------- тест ---------- */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.chip{font-family:'JetBrains Mono';font-size:.72rem;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:7px 12px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+.chip b{color:var(--ink)}
+.timer{position:relative;width:62px;height:62px;flex:none}
+.timer svg{transform:rotate(-90deg);display:block}
+.timer .track{stroke:rgba(120,160,255,.16);stroke-width:5;fill:none}
+.timer .prog{stroke:var(--cyan);stroke-width:5;fill:none;stroke-linecap:round;transition:stroke .3s}
+.timer .tt{position:absolute;inset:0;display:grid;place-items:center;
+  font:700 .88rem 'JetBrains Mono';color:var(--cyan)}
+.timer.warn .prog{stroke:var(--amber)} .timer.warn .tt{color:var(--amber)}
+.timer.danger .prog{stroke:var(--red)} .timer.danger .tt{color:var(--red);animation:blink .5s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.seg{display:flex;gap:5px;margin:0 0 14px}
+.seg i{flex:1;height:5px;border-radius:3px;background:rgba(120,160,255,.14);transition:.3s}
+.seg i.done{background:var(--cyan);box-shadow:0 0 8px rgba(57,230,255,.6)}
+.seg i.cur{background:rgba(57,230,255,.4);animation:segp 1s infinite}
+@keyframes segp{50%{opacity:.35}}
+
+.qcard{animation:rise .45s cubic-bezier(.22,.9,.3,1)}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.qtype{color:var(--mag);border:1px solid rgba(255,79,216,.4);border-radius:999px;
+  padding:4px 10px;background:rgba(255,79,216,.06)}
+.qtext{font-size:1.07rem;font-weight:500;line-height:1.55;margin-top:14px}
+
+.fig{text-align:center;margin:16px 0 4px}
+.fig svg{width:100%;max-width:460px;height:auto;border:1px solid rgba(96,150,255,.25);
+  border-radius:12px;background:rgba(6,10,24,.65)}
+.figcap{font-size:.74rem;color:var(--dim);margin-top:7px;letter-spacing:.06em}
+.gc{stroke:rgba(96,150,255,.13)} .gcm{stroke:rgba(96,150,255,.3)}
+.ax{stroke:#9fb8e8;stroke-width:1.4;fill:none}
+.tick{stroke:#9fb8e8}
+.num-lab{fill:#9fb8e8;font:11px 'JetBrains Mono'}
+.ax-lab{fill:#cfe2ff;font:italic 600 13px 'Manrope'}
+.curve{stroke:var(--cyan);stroke-width:2.4;fill:none;filter:drop-shadow(0 0 4px rgba(57,230,255,.8))}
+.wire{stroke:#bfe9ff;stroke-width:2;fill:none;filter:drop-shadow(0 0 3px rgba(120,220,255,.5))}
+.elbox{fill:#0a1124;stroke:#7fd7ff;stroke-width:2}
+.el-lab{fill:#ffd9f4;font:600 14px 'Manrope'}
+
+.opts{display:grid;gap:10px;margin-top:16px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:#0a1124;
+  border:1px solid var(--line);border-radius:12px;color:var(--ink);padding:13px 14px;
+  font:500 .97rem/1.5 'Manrope';cursor:pointer;user-select:none;-webkit-user-select:none;
+  transition:border-color .2s, box-shadow .2s, transform .2s, background .2s;animation:optIn .45s both}
+@keyframes optIn{from{opacity:0;transform:translateX(-14px)}}
+.opt .key{flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;
+  border:1px solid var(--line);font:700 .8rem 'JetBrains Mono';color:var(--dim);transition:.2s}
+.opt:hover{border-color:rgba(57,230,255,.5);transform:translateX(3px)}
+.opt.sel{border-color:var(--cyan);background:rgba(57,230,255,.09);
+  box-shadow:0 0 12px rgba(57,230,255,.55),0 0 36px rgba(57,230,255,.22),inset 0 0 10px rgba(57,230,255,.12);
+  animation:selPing .45s ease-out}
+.opt.sel .key{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 8px rgba(57,230,255,.6)}
+@keyframes selPing{from{box-shadow:0 0 0 0 rgba(57,230,255,.7)}}
+
+.nwrap{margin-top:16px}
+.nwrap input{font-family:'JetBrains Mono';font-size:1.5rem;letter-spacing:.05em;max-width:280px}
+.nwrap input.filled{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(57,230,255,.14),0 0 22px rgba(57,230,255,.4)}
+.nhint{font-size:.78rem;color:var(--dim);margin-top:8px}
+
+.qfoot{display:flex;justify-content:flex-end;margin-top:20px}
+.qfoot .btn{width:auto;min-width:190px;margin-top:0}
+
+/* ---------- оверлеи ---------- */
+.ovl{position:fixed;inset:0;background:rgba(4,7,16,.85);backdrop-filter:blur(6px);
+  display:none;place-items:center;z-index:50;padding:22px}
+.ovl.on{display:grid;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}}
+.warnbox{max-width:430px;width:100%;text-align:center;background:#170f03;
+  border:1.5px solid var(--amber);border-radius:18px;padding:30px 22px;
+  box-shadow:0 0 30px rgba(255,184,77,.35),0 0 90px rgba(255,184,77,.15)}
+.warnbox .wico{font-size:3rem;animation:shake .6s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.warnbox h3{font-family:'Unbounded';color:var(--amber);margin:10px 0 12px;font-size:1.15rem}
+.warnbox p{color:#e8d9b8;font-size:.93rem;line-height:1.55}
+.warnbox .btn{--c:var(--amber)}
+.toast{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:60;display:none;
+  font-family:'Unbounded';font-size:.95rem;color:var(--red);background:rgba(30,6,12,.92);
+  border:1px solid var(--red);border-radius:12px;padding:14px 22px;
+  box-shadow:0 0 24px rgba(255,84,112,.5)}
+.toast.on{display:block;animation:rise .3s}
+
+/* ---------- результаты ---------- */
+.banner{display:flex;gap:12px;align-items:center;border-radius:14px;padding:14px 16px;
+  font-weight:700;margin-bottom:18px;border:1px solid}
+.banner.ok{border-color:rgba(166,255,77,.5);background:rgba(166,255,77,.07);color:var(--lime)}
+.banner.bad{border-color:rgba(255,84,112,.55);background:rgba(255,84,112,.08);color:var(--red)}
+.scoreline{display:flex;align-items:baseline;gap:14px;margin:6px 0 14px}
+.score-big{font:800 clamp(3.2rem,16vw,5.4rem)/1 'Unbounded';color:var(--cyan);
+  text-shadow:0 0 26px rgba(57,230,255,.6)}
+.score-of{font:600 1.3rem 'Unbounded';color:var(--dim)}
+.meter{display:flex;gap:6px;margin-bottom:20px}
+.meter i{flex:1;height:12px;border-radius:4px;background:rgba(120,160,255,.13)}
+.meter i.f{background:var(--cyan);box-shadow:0 0 10px rgba(57,230,255,.7);animation:mIn .4s both}
+@keyframes mIn{from{transform:scaleY(0)}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fact{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#0a1124}
+.fact small{display:block;color:var(--dim);font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:5px}
+.fact b{font-family:'JetBrains Mono';font-size:1rem}
+.sheet-status{margin-top:16px;font-family:'JetBrains Mono';font-size:.76rem;color:var(--dim);line-height:1.6}
+.sheet-status .ok{color:var(--lime)} .sheet-status .err{color:var(--red)}
+
+@media (max-width:480px){
+  .card{padding:18px 15px}
+  .chip{font-size:.66rem}
+  .qfoot .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<svg id="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+<main>
+  <!-- ЭКРАН 1: СТАРТ -->
+  <section id="scr-start" class="screen on">
+    <div class="card">
+      <span class="tag">∿ Физика · 11 класс</span>
+      <h1>Вынужденные электромагнитные колебания.<br><span class="neon">Переменный ток</span></h1>
+      <p class="sub">Итоговый тест: 6 вопросов с выбором ответа и 4 расчётные задачи.</p>
+
+      <div class="teacher">
+        <span class="dot"></span>
+        <div><small>Учитель физики</small><b>Кунгозин Даулет Багдашұлы</b></div>
+      </div>
+
+      <div class="metas">
+        <span><b>10</b> вопросов</span>
+        <span><b>1,5 мин</b> на вопрос</span>
+        <span>максимум <b>10</b> баллов</span>
+      </div>
+
+      <label class="f"><span>Фамилия и имя учащегося</span>
+        <input type="text" id="inp-name" placeholder="Введите ФИ" autocomplete="off">
+      </label>
+      <label class="f"><span>Класс</span>
+        <span class="selwrap">
+          <select id="sel-class">
+            <option value="" disabled selected>— выберите класс —</option>
+            <option value="11Б">11 Б</option>
+            <option value="11В">11 В</option>
+          </select>
+        </span>
+      </label>
+      <label class="f"><span>Вариант</span>
+        <span class="selwrap">
+          <select id="sel-variant">
+            <option value="" disabled selected>— выберите вариант —</option>
+            <option value="1">Вариант 1</option>
+            <option value="2">Вариант 2</option>
+          </select>
+        </span>
+      </label>
+
+      <div class="att-info" id="att-info" hidden></div>
+      <button id="btn-to-disc" class="btn" disabled>Продолжить →</button>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 2: ДИСКЛЕЙМПТЕР -->
+  <section id="scr-disc" class="screen">
+    <div class="card">
+      <span class="tag" style="color:var(--amber);border-color:rgba(255,184,77,.4);background:rgba(255,184,77,.06)">⚠ Правила</span>
+      <h2 style="margin-top:14px">Дисклеймер и академическая честность</h2>
+      <ul class="rules">
+        <li>10 вопросов: 6 с выбором ответа и 4 расчётные. Ответ задачи — <b>только число без единиц измерения</b> (дробную часть отделяйте запятой или точкой).</li>
+        <li>На каждый вопрос — <b>1 минута 30 секунд</b>. Когда время истекает, тест автоматически переходит к следующему вопросу.</li>
+        <li>Вернуться к предыдущему вопросу <b>нельзя</b>. Правильные и неправильные ответы во время теста не показываются.</li>
+        <li class="warnli"><b>Не сворачивайте вкладку и не переключайтесь в другие приложения.</b> Первое нарушение — предупреждение, повторное — тест будет завершён автоматически.</li>
+        <li>Работа выполняется <b>самостоятельно</b>. Результат (ФИО, класс, вариант, балл, число попыток) отправляется учителю в Google&nbsp;Sheets.</li>
+      </ul>
+      <div class="honest"><b>Академическая честность:</b> нажимая «Начать тест», вы подтверждаете, что ознакомлены с правилами и будете выполнять работу без посторонней помощи.</div>
+      <div class="att-info" id="disc-att"></div>
+      <button id="btn-start" class="btn am">⚡ Начать тест</button>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 3: ТЕСТ -->
+  <section id="scr-quiz" class="screen">
+    <div class="hud">
+      <span class="chip" id="chip-student"></span>
+      <div class="timer" id="timer-box">
+        <svg width="62" height="62" viewBox="0 0 62 62">
+          <circle class="track" cx="31" cy="31" r="27"/>
+          <circle class="prog" id="t-prog" cx="31" cy="31" r="27"
+                  stroke-dasharray="169.6" stroke-dashoffset="0"/>
+        </svg>
+        <span class="tt" id="t-txt">1:30</span>
+      </div>
+    </div>
+    <div class="seg" id="seg"></div>
+    <div class="card qcard" id="qcard">
+      <div class="qmeta">
+        <span id="q-count">Вопрос 1/10</span>
+        <span class="qtype" id="q-type">тест</span>
+      </div>
+      <div id="fig-box"></div>
+      <p class="qtext" id="q-text"></p>
+      <div id="ans-box"></div>
+      <div class="qfoot"><button id="btn-next" class="btn" disabled>Далее →</button></div>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 4: РЕЗУЛЬТАТ -->
+  <section id="scr-result" class="screen">
+    <div class="card">
+      <div class="banner" id="res-banner"></div>
+      <span class="tag">Итог</span>
+      <div class="scoreline">
+        <span class="score-big" id="res-score">0</span>
+        <span class="score-of">/ 10 баллов</span>
+      </div>
+      <div class="meter" id="res-meter"></div>
+      <div class="facts" id="res-facts"></div>
+      <p class="sheet-status" id="res-sheet"></p>
+      <button id="btn-done" class="btn">Завершить ⟲</button>
+    </div>
+  </section>
+</main>
+
+<!-- ПРЕДУПРЕЖДЕНИЕ АНТИЧИТА -->
+<div class="ovl" id="warn-ovl">
+  <div class="warnbox">
+    <div class="wico">⚠</div>
+    <h3>Первое предупреждение</h3>
+    <p>Зафиксировано переключение приложения или сворачивание окна.<br><br>
+       При <b>повторном</b> нарушении тест будет завершён автоматически,
+       а результат отправится учителю с пометкой «нарушение».</p>
+    <button id="btn-warn-ok" class="btn am lit">Понял(а), продолжаю</button>
+  </div>
+</div>
+<div class="toast" id="toast">⏱ Время вышло!</div>
+
+<script>
+'use strict';
+/* ================================================================
+   НАСТРОЙКА. Вставьте сюда URL веб-приложения Google Apps Script
+   (Deploy → Web app → URL). Пример:
+   https://script.google.com/macros/s/AKfycb.../exec
+================================================================ */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPEvERzseD1M2t84YHwSJD4C1LUsTPxbCkSI0_uKygUzSA3vSobmLejgrwv7HE9Kv4vA/exec';
+
+const PER_Q = 90, MAX_SCORE = 10, CIRC = 169.6, KEYS = ['А','Б','В','Г'];
+const $ = s => document.querySelector(s);
+
+/* ---------------- SVG-генераторы (сетка + оси с подписями) ---------------- */
+function sinePath(x0,y0,wPx,ampPx,periodPx,phase=0,n=160){
+  let d='';
+  for(let i=0;i<=n;i++){
+    const x=x0+wPx*i/n;
+    const y=y0-ampPx*Math.sin(2*Math.PI*(wPx*i/n)/periodPx+phase);
+    d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';
+  }
+  return d.trim();
+}
+function makeGraph(cfg){
+  const {cell,cols,rows,midRow,xTicks,yTicks,path,xLab,yLab,caption}=cfg;
+  const pL=48,pR=36,pT=20,pB=30;
+  const W=pL+cols*cell+pR, H=pT+rows*cell+pB, cy=pT+midRow*cell;
+  let g='';
+  for(let i=0;i<=cols;i++){const x=pL+i*cell;
+    g+=`<line x1="${x}" y1="${pT}" x2="${x}" y2="${pT+rows*cell}" class="${i%2?'gc':'gc gcm'}"/>`;}
+  for(let j=0;j<=rows;j++){const y=pT+j*cell;
+    g+=`<line x1="${pL}" y1="${y}" x2="${pL+cols*cell}" y2="${y}" class="${j%2?'gc':'gc gcm'}"/>`;}
+  const xEnd=pL+cols*cell+6, yTop=pT-4;
+  const axes=`
+    <line x1="${pL}" y1="${cy}" x2="${xEnd}" y2="${cy}" class="ax"/>
+    <path d="M${xEnd} ${cy-4} L${xEnd+9} ${cy} L${xEnd} ${cy+4}" class="ax"/>
+    <line x1="${pL}" y1="${pT+rows*cell}" x2="${pL}" y2="${yTop}" class="ax"/>
+    <path d="M${pL-4} ${yTop} L${pL} ${yTop-9} L${pL+4} ${yTop}" class="ax"/>
+    <text x="${W-4}" y="${cy+24}" text-anchor="end" class="ax-lab">${xLab}</text>
+    <text x="${pL+8}" y="${pT-4}" class="ax-lab">${yLab}</text>`;
+  const xt=xTicks.map(([c,t])=>
+    `<line x1="${pL+c*cell}" y1="${cy-4}" x2="${pL+c*cell}" y2="${cy+4}" class="tick"/>
+     <text x="${pL+c*cell}" y="${cy+17}" text-anchor="middle" class="num-lab">${t}</text>`).join('');
+  const yt=yTicks.map(([r,t])=>
+    `<line x1="${pL-4}" y1="${cy-r*cell}" x2="${pL+4}" y2="${cy-r*cell}" class="tick"/>
+     <text x="${pL-8}" y="${cy-r*cell+4}" text-anchor="end" class="num-lab">${t}</text>`).join('');
+  return `<figure class="fig">
+    <svg viewBox="0 0 ${W} ${H}" role="img">${g}${axes}${xt}${yt}<path class="curve" d="${path}"/></svg>
+    <figcaption class="figcap">${caption}</figcaption></figure>`;
+}
+const GRAPH_U = makeGraph({cell:34,cols:8,rows:4,midRow:2,
+  xTicks:[[0,'0'],[2,'0,01'],[4,'0,02'],[6,'0,03'],[8,'0,04']],
+  yTicks:[[1,'50'],[2,'100'],[-1,'−50'],[-2,'−100']],
+  path:sinePath(48,88,272,68,136),xLab:'t, с',yLab:'u, В',
+  caption:'Рис. 1 — график зависимости напряжения от времени'});
+const GRAPH_I = makeGraph({cell:32,cols:8,rows:6,midRow:3,
+  xTicks:[[0,'0'],[2,'0,01'],[4,'0,02'],[6,'0,03'],[8,'0,04']],
+  yTicks:[[1,'1'],[2,'2'],[-1,'−1'],[-2,'−2']],
+  path:sinePath(48,116,256,64,256),xLab:'t, с',yLab:'i, А',
+  caption:'Рис. 1 — график зависимости силы тока от времени'});
+const CIRCUIT_RLC = `<figure class="fig">
+  <svg viewBox="0 0 340 168" role="img">
+    <path class="wire" d="M60 75 V50 H105 M145 50 H180 M244 50 H282 M292 50 H310 V140 H60 V115"/>
+    <circle cx="60" cy="95" r="20" class="elbox"/>
+    <path class="wire" d="M50 95 q5 -9 10 0 q5 9 10 0"/>
+    <rect x="105" y="42" width="40" height="16" class="elbox"/>
+    <path class="wire" d="M180 50 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0"/>
+    <path class="wire" stroke-width="2.8" d="M282 36 V64 M292 36 V64"/>
+    <text x="125" y="30" text-anchor="middle" class="el-lab">R</text>
+    <text x="212" y="30" text-anchor="middle" class="el-lab">L</text>
+    <text x="287" y="27" text-anchor="middle" class="el-lab">C</text>
+    <text x="30" y="100" text-anchor="middle" class="el-lab">~</text>
+  </svg><figcaption class="figcap">Рис. 1 — схема участка цепи</figcaption></figure>`;
+const CIRCUIT_RL = `<figure class="fig">
+  <svg viewBox="0 0 340 168" role="img">
+    <path class="wire" d="M60 75 V50 H110 M174 50 H225 M265 50 H310 V140 H60 V115"/>
+    <circle cx="60" cy="95" r="20" class="elbox"/>
+    <path class="wire" d="M50 95 q5 -9 10 0 q5 9 10 0"/>
+    <path class="wire" d="M110 50 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0 a8 8 0 0 1 16 0"/>
+    <rect x="225" y="42" width="40" height="16" class="elbox"/>
+    <text x="142" y="30" text-anchor="middle" class="el-lab">L</text>
+    <text x="245" y="30" text-anchor="middle" class="el-lab">R</text>
+    <text x="30" y="100" text-anchor="middle" class="el-lab">~</text>
+  </svg><figcaption class="figcap">Рис. 1 — схема участка цепи</figcaption></figure>`;
+
+/* ---------------- ВОПРОСЫ (тесты → расчётные) ---------------- */
+const DATA = {
+"1":[
+ {type:'mc', q:'Вынужденными электромагнитными колебаниями в электрической цепи называют колебания, которые:',
+  opts:['возникают самопроизвольно после отключения источника',
+        'поддерживаются внешней периодически изменяющейся ЭДС',
+        'существуют только в идеальном колебательном контуре',
+        'возникают в любом проводнике с постоянным током'], a:1},
+ {type:'mc', q:'На рисунке 1 показан график зависимости напряжения от времени в цепи переменного тока. Определите период колебаний напряжения.',
+  fig:GRAPH_U, opts:['0,01 с','0,04 с','0,02 с','0,08 с'], a:2},
+ {type:'mc', q:'Полное сопротивление (импеданс) участка цепи с последовательно соединёнными резистором (R), катушкой (L) и конденсатором (C) равно:',
+  opts:['Z = R + ωL + 1/(ωC)',
+        'Z = √(R² + (ωL − 1/(ωC))²)',
+        'Z = R·ωL/(ωC)',
+        'Z = √((ωL)² + (1/(ωC))²)'], a:1},
+ {type:'mc', q:'Действующее (эффективное) значение силы переменного тока I связано с амплитудным значением Iₘ соотношением:',
+  opts:['I = Iₘ·√2','I = Iₘ/2','I = Iₘ/√2','I = Iₘ²'], a:2},
+ {type:'mc', q:'На рисунке 1 изображена схема участка цепи переменного тока. Какие элементы и как соединены на схеме?',
+  fig:CIRCUIT_RLC,
+  opts:['резистор и конденсатор — параллельно',
+        'резистор, катушка и конденсатор — последовательно',
+        'только резистор и катушка — последовательно',
+        'катушка и конденсатор — параллельно'], a:1},
+ {type:'mc', q:'Условие резонанса напряжений в последовательном колебательном контуре:',
+  opts:['Xₗ = Xc','Xₗ ≫ Xc','Xc ≫ Xₗ','R = 0'], a:0},
+ {type:'calc', q:'ЭДС рамки, вращающейся в однородном магнитном поле, изменяется по закону e = 100·sin(100πt) В. Определите частоту колебаний. Ответ — в герцах.',
+  ans:50, tol:0.1, ph:'Гц'},
+ {type:'calc', q:'Конденсатор ёмкостью C = 2 мкФ включён в цепь переменного тока частотой ν = 50 Гц. Найдите ёмкостное сопротивление конденсатора. Ответ — в килоомах, округлите до сотых.',
+  ans:1.59, tol:0.03, ph:'кОм'},
+ {type:'calc', q:'В цепи переменного тока последовательно соединены резистор R = 30 Ом, катушка с индуктивным сопротивлением 70 Ом и конденсатор с ёмкостным сопротивлением 30 Ом. Действующее напряжение сети U = 100 В. Найдите действующую силу тока. Ответ — в амперах.',
+  ans:2, tol:0.05, ph:'А'},
+ {type:'calc', q:'Колебательный контур состоит из катушки индуктивностью L = 0,1 Гн и конденсатора ёмкостью C = 10 мкФ. Найдите период свободных электромагнитных колебаний. Ответ — в миллисекундах, округлите до сотых (π = 3,14).',
+  ans:6.28, tol:0.06, ph:'мс'}
+],
+"2":[
+ {type:'mc', q:'Действие промышленного генератора переменного тока (индукционного генератора) основано на явлении:',
+  opts:['электростатической индукции','электромагнитной индукции',
+        'намагничивания железа','фотоэффекта'], a:1},
+ {type:'mc', q:'На рисунке 1 показан график зависимости силы тока от времени. Определите частоту колебаний тока.',
+  fig:GRAPH_I, opts:['20 Гц','50 Гц','25 Гц','100 Гц'], a:2},
+ {type:'mc', q:'Индуктивное сопротивление катушки в цепи переменного тока частотой ν равно:',
+  opts:['Xₗ = 2πνL','Xₗ = 1/(2πνL)','Xₗ = L/(2πν)','Xₗ = 2πνC'], a:0},
+ {type:'mc', q:'В цепи, содержащей только идеальный конденсатор, сила переменного тока:',
+  opts:['отстаёт от напряжения по фазе на π/2',
+        'совпадает по фазе с напряжением',
+        'опережает напряжение по фазе на π/2',
+        'противофазна напряжению'], a:2},
+ {type:'mc', q:'На рисунке 1 изображена схема участка цепи переменного тока. Какие элементы соединены последовательно?',
+  fig:CIRCUIT_RL,
+  opts:['резистор и катушка','резистор и конденсатор',
+        'катушка и конденсатор','только резистор'], a:0},
+ {type:'mc', q:'Частота свободных электромагнитных колебаний в колебательном контуре определяется формулой Томсона:',
+  opts:['ν = 2π√(LC)','ν = 1/(2π√(LC))','ν = 2π/(LC)','ν = 1/(2πLC)'], a:1},
+ {type:'calc', q:'Напряжение в цепи переменного тока изменяется по закону u = 311·sin(100πt) В. Найдите действующее значение напряжения. Ответ — в вольтах, округлите до целых.',
+  ans:220, tol:1, ph:'В'},
+ {type:'calc', q:'Катушка индуктивностью L = 0,2 Гн включена в цепь переменного тока частотой ν = 50 Гц. Найдите индуктивное сопротивление катушки. Ответ — в омах, округлите до десятых (π = 3,14).',
+  ans:62.8, tol:0.5, ph:'Ом'},
+ {type:'calc', q:'Цепь состоит из последовательно соединённых резистора, катушки индуктивностью L = 0,5 Гн и конденсатора и подключена к сети частотой ν = 50 Гц. При какой ёмкости в цепи наступит резонанс напряжений? Ответ — в микрофарадах, округлите до десятых (π = 3,14).',
+  ans:20.3, tol:0.4, ph:'мкФ'},
+ {type:'calc', q:'Колебательный контур содержит катушку индуктивностью L = 4 мГн и конденсатор ёмкостью C = 40 мкФ. Найдите период свободных колебаний. Ответ — в миллисекундах, округлите до сотых (π = 3,14).',
+  ans:2.51, tol:0.06, ph:'мс'}
+]};
+
+/* ---------------- состояние ---------------- */
+const state = {phase:'start', name:'', klass:'', variant:'', questions:[], qi:0,
+  sel:-1, txt:'', answers:[], violations:0, attempts:0, remaining:PER_Q,
+  endAt:0, used:0, startedAt:0, lastV:0};
+
+const attKey = () => 'ac11::' + (state.name.trim().toLowerCase()+'|'+state.klass);
+const attLoad = k => {try{return +(localStorage.getItem(k)||0)}catch(e){return 0}};
+const attSave = (k,v) => {try{localStorage.setItem(k,String(v))}catch(e){}};
+
+/* ---------------- навигация ---------------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('#'+id).classList.add('on');
+  window.scrollTo({top:0});
+}
+
+/* ---------------- экран старта ---------------- */
+const inpName=$('#inp-name'), selClass=$('#sel-class'), selVar=$('#sel-variant'),
+      btnToDisc=$('#btn-to-disc');
+function validStart(){
+  return inpName.value.trim().length>=3 && selClass.value && selVar.value;
+}
+function refreshStart(){
+  btnToDisc.disabled=!validStart();
+  const info=$('#att-info');
+  if(selClass.value && inpName.value.trim().length>=3){
+    state.name=inpName.value; state.klass=selClass.value;
+    const n=attLoad(attKey());
+    info.hidden=false;
+    info.textContent = n>0 ? `Использовано попыток этим ФИ: ${n}` : 'Попыток пока не было';
+  } else info.hidden=true;
+}
+[inpName,selClass,selVar].forEach(el=>el.addEventListener('input',refreshStart));
+btnToDisc.addEventListener('click',()=>{
+  state.name=inpName.value.trim(); state.klass=selClass.value; state.variant=selVar.value;
+  $('#disc-att').textContent=`Будет засчитана попытка №${attLoad(attKey())+1}`;
+  state.phase='disc'; show('scr-disc');
+});
+
+/* ---------------- старт теста ---------------- */
+$('#btn-start').addEventListener('click',()=>{
+  state.questions=DATA[state.variant];
+  state.qi=0; state.answers=[]; state.used=0; state.violations=0;
+  const k=attKey(); state.attempts=attLoad(k)+1; attSave(k,state.attempts);
+  state.startedAt=Date.now(); state.phase='quiz';
+  $('#chip-student').innerHTML=`<b>${state.name}</b> · ${state.klass} · вариант ${state.variant}`;
+  $('#seg').innerHTML='<i></i>'.repeat(MAX_SCORE);
+  show('scr-quiz'); renderQuiz();
+});
+
+/* ---------------- отрисовка вопроса ---------------- */
+function renderQuiz(){
+  const q=state.questions[state.qi];
+  state.sel=-1; state.txt='';
+  $('#q-count').textContent=`Вопрос ${state.qi+1}/${MAX_SCORE}`;
+  $('#q-type').textContent=q.type==='mc'?'тест':'расчёт';
+  $('#fig-box').innerHTML=q.fig||'';
+  $('#q-text').innerHTML=q.q;
+  const box=$('#ans-box');
+  if(q.type==='mc'){
+    box.innerHTML=`<div class="opts">`+q.opts.map((o,i)=>
+      `<button type="button" class="opt" data-i="${i}" style="animation-delay:${i*70}ms">
+         <span class="key">${KEYS[i]}</span><span>${o}</span></button>`).join('')+`</div>`;
+    box.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+      box.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel'); state.sel=+b.dataset.i; setNext(true);
+    }));
+  }else{
+    box.innerHTML=`<div class="nwrap">
+      <input type="text" id="num-inp" inputmode="decimal" autocomplete="off"
+             placeholder="0,00  (${q.ph})">
+      <div class="nhint">Введите только число. Единицы измерения указывать не нужно.</div></div>`;
+    const inp=$('#num-inp');
+    inp.addEventListener('input',()=>{
+      inp.value=inp.value.replace(/[^\d.,\-]/g,'');
+      state.txt=inp.value;
+      inp.classList.toggle('filled',inp.value.trim()!=='');
+      setNext(inp.value.trim()!=='');
+    });
+  }
+  const next=$('#btn-next');
+  setNext(false);
+  next.textContent = state.qi===MAX_SCORE-1 ? 'Завершить ✔' : 'Далее →';
+  const card=$('#qcard'); card.style.animation='none'; void card.offsetWidth; card.style.animation='';
+  updateSeg(); startTimer();
+}
+function setNext(on){
+  const b=$('#btn-next');
+  b.disabled=!on; b.classList.toggle('lit',on);
+}
+function updateSeg(){
+  [...$('#seg').children].forEach((s,i)=>{
+    s.className = i<state.answers.length?'done':(i===state.qi?'cur':'');
+  });
+}
+$('#btn-next').addEventListener('click',()=>{ stopTimer(); advance(); });
+
+function advance(){
+  if(state.phase!=='quiz') return;
+  const q=state.questions[state.qi];
+  let given=null, ok=false;
+  if(q.type==='mc'){
+    if(state.sel>=0){ given=KEYS[state.sel]; ok=state.sel===q.a; }
+  }else{
+    const raw=state.txt.trim().replace(',','.');
+    if(raw!==''){ const v=parseFloat(raw);
+      if(Number.isFinite(v)){ given=raw; ok=Math.abs(v-q.ans)<=(q.tol??0.01); } }
+  }
+  state.answers.push({given,ok});
+  state.qi++;
+  if(state.qi>=MAX_SCORE){ finish('done'); return; }
+  renderQuiz();
+}
+
+/* ---------------- таймер ---------------- */
+function startTimer(){
+  state.endAt=Date.now()+PER_Q*1000; state.remaining=PER_Q;
+  if(state.tid) clearInterval(state.tid);
+  state.tid=setInterval(tick,200); timerView();
+}
+function tick(){
+  state.remaining=(state.endAt-Date.now())/1000;
+  if(state.remaining<=0){
+    stopTimer();
+    state.phase='gap'; $('#toast').classList.add('on');
+    setTimeout(()=>{ $('#toast').classList.remove('on'); state.phase='quiz'; advance(); },850);
+    return;
+  }
+  timerView();
+}
+function stopTimer(){ clearInterval(state.tid); state.tid=null; }
+function fmt(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function timerView(){
+  const frac=Math.max(0,state.remaining)/PER_Q;
+  $('#t-prog').style.strokeDashoffset=(CIRC*(1-frac)).toFixed(1);
+  $('#t-txt').textContent=fmt(state.remaining);
+  const t=$('#timer-box');
+  t.classList.toggle('warn',state.remaining<=30&&state.remaining>10);
+  t.classList.toggle('danger',state.remaining<=10);
+}
+
+/* ---------------- АНТИЧИТ ----------------
+   visibilitychange + «умный» blur. Blur игнорируется, если фокус на поле
+   ввода (цифровая клавиатура на смартфоне) — нет ложных срабатываний на
+   iPhone. 1-е нарушение = предупреждение, 2-е = автозавершение теста.  */
+function violation(){
+  if(state.phase!=='quiz') return;
+  const now=Date.now();
+  if(now-state.lastV<1200) return;      // защита от двойного срабатывания
+  state.lastV=now; state.violations++;
+  if(state.violations===1){
+    state.pausedRemaining=(state.endAt-Date.now())/1000;
+    stopTimer(); state.phase='warn';
+    $('#warn-ovl').classList.add('on');
+  }else{
+    finish('cheat');
+  }
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden') violation();
+});
+window.addEventListener('blur',()=>{
+  setTimeout(()=>{
+    if(state.phase!=='quiz') return;
+    const ae=document.activeElement;
+    const onInput=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
+    if(onInput) return;                 // клавиатура — не нарушение
+    if(document.visibilityState==='hidden') return; // уже учтено выше
+    if(!document.hasFocus()) violation();
+  },350);
+});
+$('#btn-warn-ok').addEventListener('click',()=>{
+  $('#warn-ovl').classList.remove('on');
+  state.phase='quiz';
+  state.endAt=Date.now()+Math.max(0,state.pausedRemaining)*1000;
+  startTimer();
+});
+window.addEventListener('pagehide',()=>{          // закрыл вкладку — попытка уже учтена
+  if(state.phase==='quiz'||state.phase==='warn'||state.phase==='gap'){
+    sendResult({interrupted:true});
+  }
+});
+
+/* ---------------- завершение и результат ---------------- */
+const curScore=()=>state.answers.filter(a=>a.ok).length;
+async function finish(mode){
+  if(state.phase==='result') return;
+  stopTimer(); state.phase='result';
+  state.used=Math.round((Date.now()-state.startedAt)/1000);
+  const score=curScore();
+  const status = mode==='done' ? 'выполнен' : 'завершён (античит)';
+
+  const banner=$('#res-banner');
+  banner.className='banner '+(mode==='done'?'ok':'bad');
+  banner.innerHTML = mode==='done'
+    ? '✔ Тест завершён'
+    : '⛔ Тест завершён автоматически — нарушение академической честности';
+  $('#res-score').textContent=score;
+  $('#res-meter').innerHTML=Array.from({length:MAX_SCORE},(_,i)=>
+    `<i class="${i<score?'f':''}" style="animation-delay:${i*80}ms"></i>`).join('');
+  $('#res-facts').innerHTML=[
+    ['Учащийся', state.name], ['Класс', state.klass],
+    ['Вариант', state.variant], ['Балл', `${score} / ${MAX_SCORE}`],
+    ['Попыток использовано', state.attempts],
+    ['Время', fmt(state.used)],
+    ['Дата', new Date().toLocaleString('ru-RU')]
+  ].map(([l,v])=>`<div class="fact"><small>${l}</small><b>${v}</b></div>`).join('');
+  show('scr-result');
+
+  const stEl=$('#res-sheet');
+  stEl.innerHTML='⏳ Отправка результата учителю…';
+  const res=await sendResult({status});
+  stEl.innerHTML = res.local
+    ? '<span class="err">⚠ URL Google Apps Script не задан — результат не отправлен (показан только на экране).</span>'
+    : res.ok
+      ? '<span class="ok">✔ Результат отправлен в Google Sheets.</span>'
+      : '<span class="err">✖ Не удалось отправить результат. Сообщите учителю балл с экрана.</span>';
+}
+async function sendResult(o={}){
+  const payload={
+    ts:new Date().toLocaleString('ru-RU'),
+    name:state.name, klass:state.klass, variant:state.variant,
+    score:o.interrupted?curScore():curScore(), max:MAX_SCORE,
+    attempts:state.attempts,
+    status:o.status||(o.interrupted?'прерван (закрыто окно)':'?'),
+    duration:o.interrupted?Math.round((Date.now()-state.startedAt)/1000):state.used
+  };
+  if(!SCRIPT_URL||SCRIPT_URL.startsWith('ВСТАВЬТЕ')) return {ok:false,local:true};
+  try{
+    if(o.interrupted && navigator.sendBeacon){
+      navigator.sendBeacon(SCRIPT_URL,new Blob([JSON.stringify(payload)],{type:'text/plain;charset=utf-8'}));
+      return {ok:true};
+    }
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)});
+    return {ok:true};
+  }catch(e){ return {ok:false,error:e}; }
+}
+$('#btn-done').addEventListener('click',()=>{ state.phase='start'; show('scr-start'); });
+
+/* ---------------- декоративная синусоида ---------------- */
+(function(){
+  const w=$('#wave');
+  const d1=sinePath(0,60,1440,26,240,0);
+  const d2=sinePath(0,60,1440,20,320,Math.PI/3);
+  w.innerHTML=`<path class="waveP" d="${d1}"/><path class="waveP2" d="${d2}"/>`;
+})();
+</script>
+</body>
+</html>
